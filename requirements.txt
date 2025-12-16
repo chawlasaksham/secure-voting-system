@@ -4,3 +4,4 @@ Flask-SQLAlchemy
 SQLAlchemy
 cryptography
 python-dotenv
+gunicorn
