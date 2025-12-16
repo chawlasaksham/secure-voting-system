@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* Stats Grid System */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #4299e1; /* Blue Accent */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: #718096;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #2d3748;
+        margin-top: 0.5rem;
+    }
+
+    /* Section Headers */
+    .section-header {
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 1rem;
+    }
+
+    .section-header h2 {
+        font-size: 1.5rem;
+        color: #2b6cb0;
+        margin: 0;
+    }
+
+    .section-header p {
+        color: #718096;
+        font-size: 0.95rem;
+        margin-top: 0.5rem;
+    }
+
+    /* Tables (Shared Styles) */
+    .data-card {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    .styled-table th {
+        text-align: left;
+        padding: 1rem;
+        background-color: #f7fafc;
+        color: #4a5568;
+        font-weight: 600;
+        border-bottom: 2px solid #edf2f7;
+    }
+
+    .styled-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #edf2f7;
+        color: #2d3748;
+        vertical-align: middle;
+    }
+
+    /* Candidate Specific Styles */
+    .candidate-name {
+        font-weight: 700;
+        color: #2d3748;
+    }
+    .vote-count {
+        background: #ebf8ff;
+        color: #2b6cb0;
+        padding: 0.3rem 0.8rem;
+        border-radius: 999px;
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    /* Ledger/Crypto Specific Styles */
+    .crypto-cell {
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+        color: #d69e2e; /* Amber color for "code" feel */
+        background-color: #fffaf0;
+        padding: 0.5rem;
+        border-radius: 4px;
+        border: 1px solid #fce8b2;
+        max-width: 300px; /* Limit width */
+        word-break: break-all; /* Force wrap long hashes */
+    }
+
+    .decrypted-badge {
+        font-weight: 600;
+        color: #38a169;
+    }
+    
+    .timestamp {
+        color: #718096;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <span class="stat-label">Registered Voters</span>
+        <span class="stat-number">{{ total_users }}</span>
+    </div>
+    <div class="stat-card" style="border-left-color: #48bb78;"> <span class="stat-label">Votes Cast</span>
+        <span class="stat-number">{{ total_votes }}</span>
+    </div>
+</div>
+
+{% for block in campaign_stats %}
+<section class="data-card">
+  <div class="section-header">
+    <h2>{{ block.campaign.name }} Results</h2>
+    <p>{% if block.campaign.is_active %}Campaign is live{% else %}Campaign paused{% endif %}. Showing vote totals per candidate.</p>
+  </div>
+  {% if block.stats %}
+  <table class="styled-table">
+    <thead>
+      <tr>
+        <th>Candidate Name</th>
+        <th>Total Votes</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for candidate, votes in block.stats %}
+        <tr>
+          <td class="candidate-name">{{ candidate.name }}</td>
+          <td>
+            <span class="vote-count">{{ votes }}</span>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p style="text-align:center;color:#718096;">No candidates or votes recorded yet.</p>
+  {% endif %}
+</section>
+{% endfor %}
+
+<section class="data-card">
+  <div class="section-header">
+    <h2>Encrypted Vote Ledger</h2>
+    <p>Immutable audit log. Shows the raw encrypted payload stored in the database versus the decrypted result.</p>
+  </div>
+  
+  <div style="overflow-x: auto;"> <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Voter Identity</th>
+            <th>Campaign</th>
+            <th>Decrypted Choice</th>
+            <th>Encrypted Payload (Hash)</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in voter_votes %}
+            <tr>
+              <td>
+                <strong>{{ entry.user.username }}</strong><br>
+                <span style="font-size: 0.85rem; color: #a0aec0;">{{ entry.user.email }}</span>
+              </td>
+              <td>{{ entry.campaign }}</td>
+              <td>
+                  <span class="decrypted-badge">{{ entry.decrypted or "Unreadable" }}</span>
+              </td>
+              <td>
+                <div class="crypto-cell">
+                    {{ entry.encrypted }}
+                </div>
+              </td>
+              <td class="timestamp">
+                {{ entry.timestamp.strftime("%Y-%m-%d %H:%M:%S") if entry.timestamp else "—" }}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+  </div>
+</section>
+
+{% endblock %}

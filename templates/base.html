@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ title or "Secure Voting" }}</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    <style>
+        /* --- Global Resets & Typography --- */
+        :root {
+            --primary-color: #4299e1;
+            --primary-hover: #3182ce;
+            --bg-color: #f4f6f9;
+            --text-dark: #1a202c;
+            --text-light: #718096;
+            --white: #ffffff;
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Navigation Bar --- */
+        .top-nav {
+            background-color: var(--white);
+            box-shadow: var(--shadow-sm);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+        }
+
+        .links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .links a {
+            text-decoration: none;
+            color: var(--text-light);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .links a:hover {
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        /* Highlight the Logout button slightly */
+        .links a[href*="logout"] {
+            color: #e53e3e; /* Red for logout */
+        }
+        .links a[href*="logout"]:hover {
+            color: #c53030;
+        }
+
+        /* --- Main Layout --- */
+        main {
+            flex: 1; /* Pushes footer down if you add one */
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            box-sizing: border-box;
+        }
+
+        /* --- Flash Messages (Alerts) --- */
+        .alerts {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 2rem 0;
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            animation: slideIn 0.3s ease-out forwards;
+        }
+
+        /* Success Alert Style */
+        .alert.success {
+            background-color: #c6f6d5;
+            color: #22543d;
+            border-left: 5px solid #48bb78;
+        }
+
+        /* Error/Danger Alert Style */
+        .alert.error, .alert.danger {
+            background-color: #fed7d7;
+            color: #742a2a;
+            border-left: 5px solid #f56565;
+        }
+
+        /* Info/Default Alert Style */
+        .alert.info {
+            background-color: #bee3f8;
+            color: #2c5282;
+            border-left: 5px solid #4299e1;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .top-nav {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .links {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+        }
+    </style>
+  </head>
+  <body>
+    <nav class="top-nav">
+      <div class="brand">Secure Voting</div>
+      <div class="links">
+        {% if current_user.is_authenticated %}
+          {% if current_user.is_admin %}
+            <a href="{{ url_for('admin_dashboard') }}">Results</a>
+            <a href="{{ url_for('admin_voters') }}">Voter Control</a>
+            <a href="{{ url_for('admin_campaigns') }}">Campaigns</a>
+            <a href="{{ url_for('admin_candidates') }}">Candidates</a>
+          {% else %}
+            <a href="{{ url_for('user_dashboard') }}">Dashboard</a>
+          {% endif %}
+          <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}">Login</a>
+          <a href="{{ url_for('signup') }}">Sign Up</a>
+        {% endif %}
+      </div>
+    </nav>
+
+    <main>
+      {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+          <ul class="alerts">
+            {% for category, message in messages %}
+              <li class="alert {{ category }}">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+  </body>
+</html>

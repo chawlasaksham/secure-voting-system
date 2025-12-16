@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .dashboard-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .campaign-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .campaign-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 6px 12px rgba(15, 23, 42, 0.08);
+        padding: 1.5rem;
+    }
+
+    .campaign-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.75rem;
+        border-bottom: 1px solid #edf2f7;
+        padding-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .campaign-title {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #2d3748;
+    }
+
+    .status-pill {
+        align-self: flex-start;
+        padding: 0.35rem 0.85rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background-color: #c6f6d5;
+        color: #22543d;
+    }
+
+    .status-paused {
+        background-color: #fed7d7;
+        color: #742a2a;
+    }
+
+    .campaign-description {
+        color: #4a5568;
+        font-size: 0.95rem;
+    }
+
+    .status-card-success {
+        background-color: #f0fff4;
+        border: 1px solid #c6f6d5;
+        border-radius: 12px;
+        padding: 1.5rem;
+        color: #2f855a;
+    }
+
+    .info-callout {
+        background: #ebf8ff;
+        color: #2c5282;
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid #4299e1;
+        margin-bottom: 1.5rem;
+    }
+
+    .candidates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .candidate-card {
+        border: 1px solid #edf2f7;
+        border-radius: 12px;
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        background: #fdfdfd;
+    }
+
+    .candidate-card h3 {
+        margin: 0;
+        color: #2b6cb0;
+    }
+
+    .candidate-manifesto {
+        font-size: 0.9rem;
+        color: #4a5568;
+        background: #f7fafc;
+        padding: 0.75rem;
+        border-radius: 8px;
+        border-left: 4px solid #cbd5e0;
+    }
+
+    .vote-form label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #4a5568;
+        display: block;
+        margin-bottom: 0.4rem;
+    }
+
+    .vote-form input {
+        width: 100%;
+        padding: 0.6rem;
+        border: 1px solid #cbd5e0;
+        border-radius: 6px;
+        margin-bottom: 0.8rem;
+    }
+
+    .vote-form button {
+        width: 100%;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 6px;
+        background: #4299e1;
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .vote-form button:hover {
+        background: #3182ce;
+    }
+
+    .empty-campaign {
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px dashed #cbd5e0;
+        text-align: center;
+        color: #718096;
+    }
+</style>
+
+<section>
+    <div class="dashboard-header">
+        <h2>Welcome, {{ current_user.username }}</h2>
+        <p>Vote once in every campaign you are eligible for.</p>
+    </div>
+
+    {% if campaigns %}
+        <div class="campaign-feed">
+            {% for campaign in campaigns %}
+                {% set vote = votes_by_campaign.get(campaign.id) %}
+                <article class="campaign-card">
+                    <div class="campaign-header">
+                        <div>
+                            <h3 class="campaign-title">{{ campaign.name }}</h3>
+                            {% if campaign.description %}
+                                <p class="campaign-description">{{ campaign.description }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="status-pill {% if campaign.is_active %}status-active{% else %}status-paused{% endif %}">
+                            {% if campaign.is_active %}Active{% else %}Paused{% endif %}
+                        </span>
+                    </div>
+
+                    {% if vote %}
+                        <div class="status-card-success">
+                            <h4 style="margin-top:0;">Vote Recorded</h4>
+                            <p>You chose <strong>{{ vote.candidate.name }}</strong> on {{ vote.timestamp.strftime("%b %d, %Y %H:%M") if vote.timestamp else "this campaign" }}.</p>
+                        </div>
+                    {% elif not campaign.is_active %}
+                        <div class="empty-campaign">
+                            Voting is paused for this campaign. Please check back later.
+                        </div>
+                    {% elif not campaign.candidates %}
+                        <div class="empty-campaign">
+                            Administrators have not published candidates for this campaign yet.
+                        </div>
+                    {% else %}
+                        <div class="info-callout">
+                            Enter the security key you set at signup to confirm your ballot, then submit your choice.
+                        </div>
+
+                        <div class="candidates-grid">
+                            {% for candidate in campaign.candidates %}
+                                <article class="candidate-card">
+                                    <div>
+                                        <h3>{{ candidate.name }}</h3>
+                                        {% if candidate.manifesto %}
+                                            <p class="candidate-manifesto">"{{ candidate.manifesto }}"</p>
+                                        {% endif %}
+                                    </div>
+                                    <form class="vote-form" method="post" action="{{ url_for('cast_vote', candidate_id=candidate.id) }}">
+                                        <label>Security Key</label>
+                                        <input type="text" name="security_key" placeholder="Enter your secret phrase" required>
+                                        <button type="submit">Vote for {{ candidate.name }}</button>
+                                    </form>
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-campaign">
+            No campaigns are configured yet. Please contact your administrator.
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
+

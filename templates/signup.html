@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    /* Shared Auth Styles (Matches Login Page) */
+    .auth-wrapper {
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 85vh; /* Slightly taller for signup form */
+        background-color: #f4f6f9;
+        padding: 20px;
+    }
+
+    .auth-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 450px; /* Slightly wider for extra fields */
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.02);
+        transition: transform 0.3s ease;
+    }
+
+    .auth-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-header h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0;
+    }
+
+    .auth-header p {
+        color: #718096;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        background-color: #fcfcfc;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #4299e1;
+        background-color: #fff;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+    }
+
+    .form-group input::placeholder {
+        color: #a0aec0;
+        font-size: 0.9rem;
+    }
+
+    .helper-text {
+        font-size: 0.75rem;
+        color: #718096;
+        margin-top: 0.35rem;
+    }
+
+    .btn-register {
+        width: 100%;
+        padding: 0.875rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #ffffff;
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); /* Green for Registration */
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 1rem;
+        box-shadow: 0 4px 6px rgba(72, 187, 120, 0.3);
+    }
+
+    .btn-register:hover {
+        background: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 8px rgba(72, 187, 120, 0.4);
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: #718096;
+    }
+
+    .auth-footer a {
+        color: #4299e1;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+
+    .auth-footer a:hover {
+        color: #2b6cb0;
+        text-decoration: underline;
+    }
+</style>
+
+<div class="auth-wrapper">
+    <section class="auth-card">
+        <div class="auth-header">
+            <h2>Create Account</h2>
+            <p>Join the Secure Voting Portal</p>
+        </div>
+
+        <form method="post">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Choose a username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="name@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" minlength="6" placeholder="Create a password" required>
+                <div class="helper-text">Must be at least 6 characters long.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="security_key">Security Key</label>
+                <input type="text" id="security_key" name="security_key" placeholder="Secret phrase for voting">
+                <div class="helper-text">Used to verify your identity during voting.</div>
+            </div>
+
+            <button type="submit" class="btn-register">Register</button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Already registered? <a href="{{ url_for('login') }}">Login here</a></p>
+        </div>
+    </section>
+</div>
+
+{% endblock %}

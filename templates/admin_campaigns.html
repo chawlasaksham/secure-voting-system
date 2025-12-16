@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .section-wrapper {
+        margin-bottom: 3rem;
+    }
+
+    .card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+        padding: 2rem;
+    }
+
+    .card-header {
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+    }
+
+    .card-header h2 {
+        margin: 0;
+        color: #2d3748;
+        font-size: 1.6rem;
+    }
+
+    .card-header p {
+        color: #718096;
+        margin-top: 0.5rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #cbd5e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        box-sizing: border-box;
+        margin-bottom: 1rem;
+    }
+
+    .form-control-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.35rem;
+    }
+
+    .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        color: #4a5568;
+        font-weight: 600;
+    }
+
+    .primary-btn {
+        background-color: #4299e1;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .primary-btn:hover {
+        background-color: #3182ce;
+    }
+
+    .campaign-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .campaign-row {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .campaign-header {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        border-bottom: 1px solid #edf2f7;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .status-badge {
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .status-active {
+        background: #c6f6d5;
+        color: #22543d;
+    }
+
+    .status-paused {
+        background: #fed7d7;
+        color: #742a2a;
+    }
+
+    .campaign-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        border: none;
+        border-radius: 8px;
+        padding: 0.5rem 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .btn-secondary {
+        background: #edf2f7;
+        color: #2d3748;
+    }
+
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+
+    .btn-danger {
+        background: #fff5f5;
+        color: #c53030;
+    }
+
+    .btn-danger:hover {
+        background: #fed7d7;
+    }
+
+    .campaign-form textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+
+    .usage-metrics {
+        color: #718096;
+        font-size: 0.9rem;
+    }
+</style>
+
+<section class="section-wrapper">
+    <div class="card">
+        <div class="card-header">
+            <h2>Create Campaign</h2>
+            <p>Spin up concurrent campaigns for different ballots or cohorts.</p>
+        </div>
+        <form method="post">
+            <input type="hidden" name="action" value="create">
+            <label class="form-control-label">Campaign Name</label>
+            <input class="form-control" type="text" name="name" placeholder="e.g. Tech Council 2025" required>
+
+            <label class="form-control-label">Description</label>
+            <textarea class="form-control" name="description" placeholder="Optional summary for admins and voters."></textarea>
+
+            <label class="checkbox-row">
+                <input type="checkbox" name="is_active" checked>
+                Campaign is active
+            </label>
+
+            <button class="primary-btn" type="submit">Create Campaign</button>
+        </form>
+    </div>
+</section>
+
+<section class="section-wrapper">
+    <div class="card">
+        <div class="card-header">
+            <h2>Active & Archived Campaigns</h2>
+            <p>Manage schedules, pause voting, or sunset unused campaigns.</p>
+        </div>
+
+        {% if campaigns %}
+            <div class="campaign-list">
+                {% for campaign in campaigns %}
+                    <div class="campaign-row">
+                        <div class="campaign-header">
+                            <div>
+                                <h3 style="margin: 0;">{{ campaign.name }}</h3>
+                                <p class="usage-metrics">
+                                    {{ campaign.candidates|length }} candidates · {{ campaign.votes|length }} votes recorded
+                                </p>
+                            </div>
+                            <span class="status-badge {% if campaign.is_active %}status-active{% else %}status-paused{% endif %}">
+                                {% if campaign.is_active %}Active{% else %}Paused{% endif %}
+                            </span>
+                        </div>
+
+                        <form method="post" class="campaign-form">
+                            <input type="hidden" name="campaign_id" value="{{ campaign.id }}">
+                            <input type="hidden" name="action" value="update">
+
+                            <label class="form-control-label">Name</label>
+                            <input class="form-control" type="text" name="name" value="{{ campaign.name }}" required>
+
+                            <label class="form-control-label">Description</label>
+                            <textarea class="form-control" name="description">{{ campaign.description }}</textarea>
+
+                            <label class="checkbox-row">
+                                <input type="checkbox" name="is_active" {% if campaign.is_active %}checked{% endif %}>
+                                Campaign is active
+                            </label>
+
+                            <div class="campaign-actions">
+                                <button class="btn btn-secondary" type="submit">Save Changes</button>
+                                <button class="btn btn-secondary" name="action" value="toggle_active" type="submit">
+                                    {% if campaign.is_active %}Pause Voting{% else %}Resume Voting{% endif %}
+                                </button>
+                                <button class="btn btn-danger" name="action" value="delete" onclick="return confirm('Delete {{ campaign.name }}? This removes all associated candidates. Votes must be cleared first.');">
+                                    Delete
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="text-align: center; color: #718096; padding: 2rem 0;">No campaigns yet. Create your first campaign above.</p>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}
+

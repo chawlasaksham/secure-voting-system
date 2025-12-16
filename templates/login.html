@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    .login-wrapper {
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh; 
+        background-color: #f4f6f9;
+        padding: 20px;
+    }
+
+    .login-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 420px;
+        padding: 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.02);
+        transition: transform 0.3s ease;
+    }
+
+    .login-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .login-header h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0;
+    }
+
+    .login-header p {
+        color: #718096;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        background-color: #fcfcfc;
+        transition: all 0.2s ease;
+        box-sizing: border-box; /* Ensures padding doesn't affect width */
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #4299e1;
+        background-color: #fff;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
+    }
+
+    .form-group input::placeholder {
+        color: #a0aec0;
+        font-size: 0.9rem;
+    }
+
+    .security-note {
+        font-size: 0.75rem;
+        color: #718096;
+        margin-top: 0.25rem;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 0.875rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #ffffff;
+        background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 1rem;
+        box-shadow: 0 4px 6px rgba(66, 153, 225, 0.3);
+    }
+
+    .btn-submit:hover {
+        background: linear-gradient(135deg, #3182ce 0%, #2b6cb0 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 8px rgba(66, 153, 225, 0.4);
+    }
+
+    .btn-submit:active {
+        transform: translateY(0);
+    }
+
+    .login-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: #718096;
+    }
+
+    .login-footer a {
+        color: #4299e1;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s;
+    }
+
+    .login-footer a:hover {
+        color: #2b6cb0;
+        text-decoration: underline;
+    }
+</style>
+
+<div class="login-wrapper">
+    <section class="login-card">
+        <div class="login-header">
+            <h2>Welcome Back</h2>
+            <p>Secure Voting Portal</p>
+        </div>
+
+        <form method="post">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="name@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+
+            <div class="form-group">
+                <label for="security_key">
+                    Security Key 
+                    <span style="color: #e53e3e;">*</span>
+                </label>
+                <input type="text" id="security_key" name="security_key" placeholder="Your secret voting phrase">
+                <div class="security-note">Required for registered voters only.</div>
+            </div>
+
+            <button type="submit" class="btn-submit">Sign In</button>
+        </form>
+
+        <div class="login-footer">
+            <p>New voter? <a href="{{ url_for('signup') }}">Create an account</a></p>
+        </div>
+    </section>
+</div>
+
+{% endblock %}

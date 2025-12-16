@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* Control Room Layout */
+    .control-room-header {
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 1rem;
+    }
+
+    .control-room-header h2 {
+        font-size: 1.75rem;
+        color: #2d3748;
+        margin: 0;
+    }
+
+    .control-room-header p {
+        color: #718096;
+        margin-top: 0.5rem;
+    }
+
+    /* Responsive Table Wrapper */
+    .table-container {
+        width: 100%;
+        overflow-x: auto; /* Scroll horizontally on small screens */
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border: 1px solid #edf2f7;
+    }
+
+    .voter-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px; /* Ensures table doesn't squish too much */
+    }
+
+    .voter-table th {
+        background-color: #f7fafc;
+        color: #4a5568;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 1rem 1.5rem;
+        text-align: left;
+        border-bottom: 2px solid #edf2f7;
+    }
+
+    .voter-table td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #edf2f7;
+        color: #2d3748;
+        vertical-align: middle;
+    }
+
+    .voter-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .voter-table tr:hover {
+        background-color: #f8fafc;
+    }
+
+    /* Badges for Role and Status */
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .badge-role-admin {
+        background-color: #e9d8fd;
+        color: #553c9a;
+    }
+
+    .badge-role-voter {
+        background-color: #edf2f7;
+        color: #4a5568;
+    }
+
+    .badge-vote {
+        background-color: #ebf8ff;
+        color: #2b6cb0;
+        border: 1px solid #bee3f8;
+    }
+    
+    .text-muted {
+        color: #a0aec0;
+        font-style: italic;
+    }
+
+    /* Action Buttons */
+    .actions-cell {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .btn-action {
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-toggle {
+        background-color: #edf2f7;
+        color: #4a5568;
+    }
+
+    .btn-toggle:hover {
+        background-color: #e2e8f0;
+        color: #2d3748;
+    }
+
+    .btn-delete {
+        background-color: #fff5f5;
+        color: #c53030;
+    }
+
+    .btn-delete:hover {
+        background-color: #fed7d7;
+        color: #9b2c2c;
+    }
+
+    .current-user-tag {
+        font-size: 0.85rem;
+        color: #718096;
+        font-style: italic;
+    }
+
+    .vote-badges {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+</style>
+
+<section>
+  <div class="control-room-header">
+    <h2>Voter Control Room</h2>
+    <p>Review each voter, see their decrypted choices, and manage access permissions.</p>
+  </div>
+
+  <div class="table-container">
+    <table class="voter-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Decrypted Vote</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+          <tr>
+            <td>
+                <strong>{{ user.username }}</strong>
+            </td>
+            <td>{{ user.email }}</td>
+            
+            <td>
+                {% if user.is_admin %}
+                    <span class="badge badge-role-admin">Admin</span>
+                {% else %}
+                    <span class="badge badge-role-voter">Voter</span>
+                {% endif %}
+            </td>
+
+            <td>
+                {% set vote_status = votes_by_user.get(user.id, []) %}
+                {% if vote_status %}
+                    <div class="vote-badges">
+                        {% for vote in vote_status %}
+                            <span class="badge badge-vote">{{ vote.campaign }} → {{ vote.choice or "Unreadable" }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <span class="text-muted">Not yet voted</span>
+                {% endif %}
+            </td>
+
+            <td>
+              <div class="actions-cell">
+                {% if user.id != current_user.id %}
+                  <form method="post">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <input type="hidden" name="action" value="toggle_admin">
+                    <button type="submit" class="btn-action btn-toggle">
+                      {% if user.is_admin %}Demote to Voter{% else %}Promote to Admin{% endif %}
+                    </button>
+                  </form>
+
+                  <form method="post" onsubmit="return confirm('Are you sure you want to permanently delete this user? This cannot be undone.')">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <input type="hidden" name="action" value="delete">
+                    <button type="submit" class="btn-action btn-delete">Delete</button>
+                  </form>
+                {% else %}
+                  <span class="current-user-tag">(You)</span>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{% endblock %}
